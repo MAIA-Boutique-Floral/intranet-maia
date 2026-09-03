@@ -500,7 +500,7 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
    ⚠️ Reemplaza esta URL por la de TU implementación (Implementar →
    Administrar implementaciones → copiar URL que termina en /exec).
    ══════════════════════════════════════════════════════════════ */
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxc7_8ZgKlBNGCioOstRiRiw6S3dL11mPcDzhEhZXZ0jUPYcEgDDzDzRFtuvWpL3hoS/exec';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4abJnm8PSE-LNtjskFHOl_KO4acPmcs2nxwtatnfoD-Nz2q0mEfBwwoEjrBgyDquR/exec';
 
 /* Llama a una función del backend por JSONP.
    accion:  nombre de la función en Codigo.gs (ver despacharAccionApi)
@@ -1173,16 +1173,47 @@ function enviarTicketAGrupoUI() {
   });
 }
 
+/* Arma el mismo texto del ticket para el enlace de WhatsApp (equivalente al
+   que construye Codigo.gs en construirMensajeRemision). */
+function construirMensajeRemisionJS(t) {
+  var lineas = (t.articulos || []).map(function (a) {
+    return '- ' + a.cantidad + 'x ' + (a.articulo || '') + ' - $' + Number(a.importe).toFixed(2);
+  }).join('\n');
+  var entrega = t.envioDomicilio
+    ? ('\nEntrega: ' + (t.fechaEntrega || '-') + ' ' + (t.horaEntrega || '') + '\nDomicilio: ' + (t.domicilio || '-'))
+    : '';
+  return '*MAIA Boutique*\n' +
+    'Flores y Globos - ' + t.sucursal + '\n\n' +
+    'Remision: ' + t.idRemision + '\n' +
+    'Fecha: ' + t.fecha + '\n' +
+    'Pedido No: ' + (t.pedidoNo || '-') + '\n' +
+    'Cliente: ' + (t.cliente || '-') + '\n' +
+    'Celular: ' + (t.celular || '-') + entrega + '\n\n' +
+    lineas + '\n\n' +
+    'Subtotal: $' + Number(t.subtotal).toFixed(2) + '\n' +
+    'Anticipo (' + (t.formaPagoAnticipo || '') + '): $' + Number(t.anticipo).toFixed(2) + '\n' +
+    'Restante (' + (t.formaPagoRestante || '') + '): $' + Number(t.restante).toFixed(2) + '\n\n' +
+    'Atendio: ' + (t.usuario || '-');
+}
+
+/* Abre WhatsApp directo (enlace click-to-chat) con el mensaje ya escrito,
+   para que la asesora solo confirme el envío desde su propio WhatsApp —
+   así no depende de la API oficial de Meta (que no manda mensajes libres
+   fuera de su ventana de 24h) ni de permisos de UrlFetchApp. */
 function enviarTicketAlClienteUI() {
   if (!ultimoTicket || !ultimoTicket.idRemision) return;
   var msg = document.getElementById('msgEnvioTicket');
   msg.className = 'msg'; msg.style.display = 'none';
-  var restaurar = ocuparBoton('btn-enviar-cliente', 'Enviando…');
-  llamarApi('enviarTicketAlCliente', { idRemision: ultimoTicket.idRemision }, function (r) {
-    restaurar();
-    if (r.ok) mostrarMsg(msg, 'Ticket enviado al cliente.', true);
-    else mostrarMsg(msg, r.error || 'No se pudo enviar.', false);
-  });
+
+  var numero = String(ultimoTicket.celular || '').replace(/[^0-9]/g, '');
+  if (!numero) { mostrarMsg(msg, 'Esta remisión no tiene un celular válido.', false); return; }
+  if (numero.length === 10) numero = '52' + numero;
+
+  var texto = construirMensajeRemisionJS(ultimoTicket);
+  window.open('https://api.whatsapp.com/send?phone=' + numero + '&text=' + encodeURIComponent(texto), '_blank');
+  mostrarMsg(msg, 'Se abrió WhatsApp — confirma el envío ahí.', true);
+
+  llamarApi('marcarTicketEnviado', { idRemision: ultimoTicket.idRemision, columna: 'ENVIAR TICKET AL CLIENTE' }, function () {});
 }
 
 /* ── Tabla Remisiones ─────────────────────────────────── */
