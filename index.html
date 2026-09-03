@@ -485,6 +485,11 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
       <div class="centro">¡Gracias por su compra! 🌷</div>
     </div>
     <button class="btn btn-primary btn-block" style="margin-top:14px" onclick="imprimirTicket()">Imprimir Ticket</button>
+    <div class="fila2" style="margin-top:8px">
+      <button type="button" class="btn btn-secundario" id="btn-enviar-grupo" onclick="enviarTicketAGrupoUI()">📤 Enviar a Tickets Maia Boutique</button>
+      <button type="button" class="btn btn-secundario" id="btn-enviar-cliente" onclick="enviarTicketAlClienteUI()">📤 Enviar al Cliente</button>
+    </div>
+    <div class="msg" id="msgEnvioTicket"></div>
   </div>
 </div>
 
@@ -495,7 +500,7 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
    ⚠️ Reemplaza esta URL por la de TU implementación (Implementar →
    Administrar implementaciones → copiar URL que termina en /exec).
    ══════════════════════════════════════════════════════════════ */
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxAF8Oy74vTQr6B0GYKyvqLFbp6xkkmZAY_upuceMXAC8jMdSgacxseu8jRyfzDHzRD/exec';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxc7_8ZgKlBNGCioOstRiRiw6S3dL11mPcDzhEhZXZ0jUPYcEgDDzDzRFtuvWpL3hoS/exec';
 
 /* Llama a una función del backend por JSONP.
    accion:  nombre de la función en Codigo.gs (ver despacharAccionApi)
@@ -1035,6 +1040,7 @@ function generarTicketDesdeTabla(idRemision, boton) {
     boton.disabled = false;
     boton.textContent = textoOriginal;
     if (!r.ok) return alert(r.error);
+    ultimoTicket = r.ticket;
     armarTicket(r.ticket);
     document.getElementById('ovVerTicket').classList.add('open');
   });
@@ -1152,6 +1158,31 @@ function imprimirTicket() {
     st.textContent = '@page{size:80mm ' + altoMM + 'mm;margin:0}';
   } catch (e) {}
   window.print();
+}
+
+/* ── Enviar ticket por WhatsApp ───────────────────────── */
+function enviarTicketAGrupoUI() {
+  if (!ultimoTicket || !ultimoTicket.idRemision) return;
+  var msg = document.getElementById('msgEnvioTicket');
+  msg.className = 'msg'; msg.style.display = 'none';
+  var restaurar = ocuparBoton('btn-enviar-grupo', 'Enviando…');
+  llamarApi('enviarTicketAGrupo', { idRemision: ultimoTicket.idRemision }, function (r) {
+    restaurar();
+    if (r.ok) mostrarMsg(msg, 'Ticket enviado al grupo.', true);
+    else mostrarMsg(msg, r.error || 'No se pudo enviar.', false);
+  });
+}
+
+function enviarTicketAlClienteUI() {
+  if (!ultimoTicket || !ultimoTicket.idRemision) return;
+  var msg = document.getElementById('msgEnvioTicket');
+  msg.className = 'msg'; msg.style.display = 'none';
+  var restaurar = ocuparBoton('btn-enviar-cliente', 'Enviando…');
+  llamarApi('enviarTicketAlCliente', { idRemision: ultimoTicket.idRemision }, function (r) {
+    restaurar();
+    if (r.ok) mostrarMsg(msg, 'Ticket enviado al cliente.', true);
+    else mostrarMsg(msg, r.error || 'No se pudo enviar.', false);
+  });
 }
 
 /* ── Tabla Remisiones ─────────────────────────────────── */
