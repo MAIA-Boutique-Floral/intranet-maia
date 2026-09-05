@@ -485,6 +485,7 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
       <hr>
       <div class="centro">Atendió: <span id="tk-usuario"></span></div>
       <div class="centro">¡Gracias por su compra! 🌷</div>
+      <div class="centro" id="tk-impreso" style="font-size:9.5px;color:#555;margin-top:4px"></div>
     </div>
     <button class="btn btn-primary btn-block" style="margin-top:14px" onclick="imprimirTicket()">Imprimir Ticket</button>
     <div class="fila2" style="margin-top:8px">
@@ -1139,19 +1140,32 @@ function armarTicket(t) {
 }
 
 function imprimirTicket() {
+  /* Sella la hora de impresión en el propio ticket ANTES de medir el alto,
+     para que esa línea también cuente en el cálculo y no quede cortada. */
+  try {
+    var ahora = new Date();
+    var pad2 = function (n) { return String(n).padStart(2, '0'); };
+    var fechaImp = pad2(ahora.getDate()) + '/' + pad2(ahora.getMonth() + 1) + '/' +
+      ahora.getFullYear() + ' ' + pad2(ahora.getHours()) + ':' + pad2(ahora.getMinutes());
+    var elImp = document.getElementById('tk-impreso');
+    if (elImp) elImp.textContent = 'Impreso: ' + fechaImp;
+  } catch (e) {}
+
   /* Calcula la altura real del contenido del ticket y fija un @page con esa
      altura exacta antes de imprimir. Un alto fijo en "auto" a veces no se
      respeta igual en todos los navegadores/impresoras y corta contenido;
-     con la altura calculada, la hoja siempre mide justo lo que necesita.
+     con la altura calculada, la hoja siempre mide justo lo que necesita y
+     la impresora hace el corte justo ahí, sin dejar papel en blanco de más.
      La impresión se hace siempre a escala 100% (ver aviso arriba del
-     modal), así que aquí se usa la altura real del ticket tal cual,
-     sin reducirla artificialmente: reducirla es lo que antes generaba un
+     modal), así que aquí se usa la altura real del ticket tal cual, sin
+     reducirla artificialmente: reducirla es lo que antes generaba un
      @page más chico que el contenido real y provocaba que el navegador
-     imprimiera el ticket duplicado en 2-3 hojas. */
+     imprimiera el ticket duplicado en 2-3 hojas. El margen que se suma es
+     mínimo (solo para redondeo px→mm), para no desperdiciar rollo. */
   try {
     var el = document.getElementById('ticket');
     var altoPx = el.scrollHeight;
-    var altoMM = Math.ceil(altoPx * 25.4 / 96) + 8;
+    var altoMM = Math.ceil(altoPx * 25.4 / 96) + 3;
     var st = document.getElementById('page-size-dinamico');
     if (!st) {
       st = document.createElement('style');
@@ -1161,8 +1175,9 @@ function imprimirTicket() {
     st.textContent = '@page{size:80mm ' + altoMM + 'mm;margin:0}';
   } catch (e) {}
   /* Pequeña espera para que el navegador recalcule el layout con el nuevo
-     @page antes de abrir el diálogo de impresión (evita que use la altura
-     anterior por una condición de carrera). */
+     @page (y con la línea de "Impreso:" ya agregada) antes de abrir el
+     diálogo de impresión (evita que use medidas anteriores por una
+     condición de carrera). */
   setTimeout(function () { window.print(); }, 50);
 }
 
