@@ -123,7 +123,7 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
   #ovVerTicket{display:block !important}
   #ovVerTicket *{visibility:hidden}
   #ticket,#ticket *{visibility:visible}
-  #ticket{position:absolute;top:0;left:0;width:80mm;padding:0 7mm 4mm 4mm;box-sizing:border-box}
+  #ticket{position:absolute;top:0;left:0;width:80mm;padding:3mm 4mm;box-sizing:border-box}
 }
 .aviso-impresion{background:#fff3cd;border:1px solid #e0c060;color:#5a4a10;font-size:11px;
   padding:10px 12px;margin-bottom:12px;border-radius:8px;font-family:Arial,sans-serif;line-height:1.5}
@@ -1164,7 +1164,7 @@ function imprimirTicket() {
   try {
     var el = document.getElementById('ticket');
     var altoPx = el.scrollHeight;
-    var altoMM = Math.ceil(altoPx * 25.4 / 96) + 6;
+    var altoMM = Math.ceil(altoPx * 25.4 / 96) + 2;
     var st = document.getElementById('page-size-dinamico');
     if (!st) {
       st = document.createElement('style');
