@@ -109,21 +109,18 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
   margin-top:6px;padding-top:8px}
 
 /* ── TICKET 80mm ─────────────────────────────────────────── */
-#ticket{width:100%;max-width:80mm;box-sizing:border-box;margin:0 auto;padding:6px 4mm;font-family:'Courier New',monospace;font-size:13px;line-height:1.35;color:#000}
-#ticket div{word-break:break-word}
-#ticket h3{text-align:center;font-size:16px;margin-bottom:4px}
+#ticket{width:100%;max-width:80mm;box-sizing:border-box;margin:0 auto;padding:6px 4mm;font-family:'Courier New',monospace;font-size:11px;color:#000}
+#ticket div,#ticket td{word-break:break-word}
+#ticket h3{text-align:center;font-size:13px;margin-bottom:2px}
 #ticket .centro{text-align:center}
 #ticket hr{border:none;border-top:1px dashed #000;margin:6px 0}
-#ticket .tk-row{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;padding:2px 0;font-size:12.5px}
-#ticket .tk-row>span:first-child,#ticket .tk-row>b:first-child{flex:1 1 auto;min-width:0;word-break:break-word}
-#ticket .tk-row>span:last-child,#ticket .tk-row>b:last-child{flex:0 0 auto;white-space:nowrap;text-align:right}
+#ticket table{width:100%;border-collapse:collapse}
+#ticket td{font-size:10.5px;vertical-align:top;padding:1px 0}
 @media print{
   @page{size:80mm auto;margin:0}
-  body>*{display:none !important}
-  #ovVerTicket{display:block !important}
-  #ovVerTicket *{visibility:hidden}
+  body *{visibility:hidden}
   #ticket,#ticket *{visibility:visible}
-  #ticket{position:absolute;top:0;left:0;width:80mm;padding:3mm 4mm 4mm;box-sizing:border-box}
+  #ticket{position:absolute;top:0;left:0;width:80mm;padding:0 4mm;box-sizing:border-box}
 }
 .aviso-impresion{background:#fff3cd;border:1px solid #e0c060;color:#5a4a10;font-size:11px;
   padding:10px 12px;margin-bottom:12px;border-radius:8px;font-family:Arial,sans-serif;line-height:1.5}
@@ -268,15 +265,25 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
       <div class="toggle-si-no">
         <button type="button" id="rem-suc-sc" onclick="elegirSucursal('SAN CRISTOBAL')">San Cristóbal</button>
         <button type="button" id="rem-suc-oa" onclick="elegirSucursal('OJO DE AGUA')">Ojo de Agua</button>
+        <button type="button" id="rem-suc-ba" onclick="elegirSucursal('BOSQUES DE ARAGON')">Bosques de Aragón</button>
+        <button type="button" id="rem-suc-ta" onclick="elegirSucursal('TALLER')">Taller</button>
       </div>
     </div>
 
     <div class="fila3">
       <div class="campo"><label>Remisión No.</label><input id="rem-no" disabled placeholder="Se genera automático"></div>
       <div class="campo"><label>Pedido No.</label><input id="rem-pedido" disabled placeholder="Se genera automático"></div>
-      <div class="campo"><label class="req">Celular</label><input id="rem-celular"></div>
+      <div class="campo"><label class="req">Celular</label><input id="rem-celular" maxlength="10" placeholder="10 dígitos"></div>
     </div>
     <div class="campo"><label class="req">Cliente</label><input id="rem-cliente"></div>
+
+    <div class="campo">
+      <label class="req">Tipo de venta</label>
+      <div class="toggle-si-no">
+        <button type="button" id="rem-tipo-mostrador" onclick="elegirTipoVenta('MOSTRADOR')">Mostrador</button>
+        <button type="button" id="rem-tipo-pedido" onclick="elegirTipoVenta('PEDIDO')">Pedido</button>
+      </div>
+    </div>
 
     <div class="campo">
       <label>¿Envío a domicilio?</label>
@@ -286,11 +293,13 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
       </div>
     </div>
     <div class="fila3">
-      <div class="campo"><label>Fecha entrega</label><input id="rem-fecha-ent" type="date"></div>
-      <div class="campo"><label>Hora entrega</label><input id="rem-hora-ent" type="time"></div>
-      <div class="campo"><label>Costo envío</label><input id="rem-costo-envio" type="number" step="0.01" disabled></div>
+      <div class="campo"><label class="req">Fecha entrega ⚠️ confirma fecha</label><input id="rem-fecha-ent" type="date"></div>
+      <div class="campo"><label class="req">Hora entrega ⚠️ confirma hora</label><input id="rem-hora-ent" type="time"></div>
+      <div class="campo"><label>Costo envío</label><input id="rem-costo-envio" type="number" step="0.01" disabled oninput="calcularTotales()"></div>
     </div>
     <div class="campo"><label>Domicilio</label><input id="rem-domicilio" disabled></div>
+    <div class="campo"><label>Referencias</label><input id="rem-referencias" disabled></div>
+    <div class="campo"><label>Link ubicación</label><input id="rem-link-ubicacion" disabled></div>
 
     <div class="campo">
       <label>Artículos</label>
@@ -301,7 +310,7 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
         </tr></thead>
         <tbody id="body-articulos"></tbody>
       </table>
-      <button type="button" class="btn btn-secundario" style="margin-top:8px" onclick="agregarFilaArticulo()">+ Agregar artículo</button>
+      <button type="button" class="btn btn-secundario" id="btn-agregar-articulo" style="margin-top:8px" onclick="agregarFilaArticulo()">+ Agregar artículo</button>
     </div>
 
     <div class="fila2">
@@ -320,9 +329,15 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
       </select>
     </div>
 
+    <div class="fila2">
+      <div class="campo"><label>Cobros extras</label><input id="rem-cobros-extras" placeholder="Ej. moño extra, tarjeta…"></div>
+      <div class="campo"><label>Costos extras</label><input id="rem-costos-extras" type="number" step="0.01" value="0" oninput="calcularTotales()" onfocus="if(this.value==='0')this.value='';"></div>
+    </div>
+
     <div class="totales">
       <div><span>Subtotal</span><span id="tot-subtotal">$0.00</span></div>
       <div><span>Costo envío</span><span id="tot-envio">$0.00</span></div>
+      <div><span>Costos extras</span><span id="tot-extras">$0.00</span></div>
       <div><span>Anticipo</span><span id="tot-anticipo">$0.00</span></div>
       <div class="total-final"><span>Restante</span><span id="tot-restante">$0.00</span></div>
     </div>
@@ -379,6 +394,8 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
     <div class="tabs">
       <button type="button" class="tab-btn" id="tab-oa" onclick="cambiarSucursalTabla('OJO DE AGUA')">Ojo de Agua</button>
       <button type="button" class="tab-btn" id="tab-sc" onclick="cambiarSucursalTabla('SAN CRISTOBAL')">San Cristóbal</button>
+      <button type="button" class="tab-btn" id="tab-ba" onclick="cambiarSucursalTabla('BOSQUES DE ARAGON')">Bosques de Aragón</button>
+      <button type="button" class="tab-btn" id="tab-ta" onclick="cambiarSucursalTabla('TALLER')">Taller</button>
     </div>
 
     <div class="tr-toolbar">
@@ -411,6 +428,8 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
       <div class="toggle-si-no">
         <button type="button" id="fid-suc-sc" onclick="elegirSucursalFidelizacion('SAN CRISTOBAL')">San Cristóbal</button>
         <button type="button" id="fid-suc-oa" onclick="elegirSucursalFidelizacion('OJO DE AGUA')">Ojo de Agua</button>
+        <button type="button" id="fid-suc-ba" onclick="elegirSucursalFidelizacion('BOSQUES DE ARAGON')">Bosques de Aragón</button>
+        <button type="button" id="fid-suc-ta" onclick="elegirSucursalFidelizacion('TALLER')">Taller</button>
       </div>
     </div>
 
@@ -474,16 +493,17 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
       <div id="tk-entrega-wrap">Entrega: <span id="tk-entrega"></span></div>
       <div id="tk-domicilio-wrap">Domicilio: <span id="tk-domicilio"></span></div>
       <hr>
-      <div id="tk-tabla"></div>
+      <table id="tk-tabla"></table>
       <hr>
-      <div class="tk-row"><span>Subtotal</span><span id="tk-subtotal"></span></div>
-      <div class="tk-row" id="tk-envio-wrap"><span>Envío</span><span id="tk-envio"></span></div>
-      <div class="tk-row"><span>Anticipo (<span id="tk-forma-ant"></span>)</span><span id="tk-anticipo"></span></div>
-      <div class="tk-row"><b>Restante (<span id="tk-forma-res"></span>)</b><b id="tk-restante"></b></div>
+      <table>
+        <tr><td>Subtotal</td><td style="text-align:right" id="tk-subtotal"></td></tr>
+        <tr id="tk-envio-wrap"><td>Envío</td><td style="text-align:right" id="tk-envio"></td></tr>
+        <tr><td>Anticipo (<span id="tk-forma-ant"></span>)</td><td style="text-align:right" id="tk-anticipo"></td></tr>
+        <tr><td><b>Restante (<span id="tk-forma-res"></span>)</b></td><td style="text-align:right"><b id="tk-restante"></b></td></tr>
+      </table>
       <hr>
       <div class="centro">Atendió: <span id="tk-usuario"></span></div>
       <div class="centro">¡Gracias por su compra! 🌷</div>
-      <div class="centro" id="tk-impreso" style="margin-top:4px"></div>
     </div>
     <button class="btn btn-primary btn-block" style="margin-top:14px" onclick="imprimirTicket()">Imprimir Ticket</button>
     <div class="fila2" style="margin-top:8px">
@@ -501,7 +521,7 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
    ⚠️ Reemplaza esta URL por la de TU implementación (Implementar →
    Administrar implementaciones → copiar URL que termina en /exec).
    ══════════════════════════════════════════════════════════════ */
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4abJnm8PSE-LNtjskFHOl_KO4acPmcs2nxwtatnfoD-Nz2q0mEfBwwoEjrBgyDquR/exec';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw5r0H-_zFgk8uYgti7xhxC1xuIwC6mIgtvJth4-Ja_pGsR-QOUkB7dsbFUODiNaaRq/exec';
 
 /* Llama a una función del backend por JSONP.
    accion:  nombre de la función en Codigo.gs (ver despacharAccionApi)
@@ -542,6 +562,7 @@ function llamarApi(accion, params, onDone) {
 
 var USUARIOS = [];
 var sucursalRemision = null;
+var tipoVentaRemision = null;
 var envioDomicilio = null;
 var contadorFilaArt = 0;
 var modoEdicionId = null;
@@ -603,6 +624,8 @@ function abrirFidelizacion() {
   sucursalFidelizacion = null;
   document.getElementById('fid-suc-sc').classList.remove('activo');
   document.getElementById('fid-suc-oa').classList.remove('activo');
+  document.getElementById('fid-suc-ba').classList.remove('activo');
+  document.getElementById('fid-suc-ta').classList.remove('activo');
   limpiarCamposFidelizacion();
   var msg = document.getElementById('msgFidelizacion');
   msg.className = 'msg'; msg.style.display = 'none';
@@ -613,6 +636,8 @@ function elegirSucursalFidelizacion(s) {
   sucursalFidelizacion = s;
   document.getElementById('fid-suc-sc').classList.toggle('activo', s === 'SAN CRISTOBAL');
   document.getElementById('fid-suc-oa').classList.toggle('activo', s === 'OJO DE AGUA');
+  document.getElementById('fid-suc-ba').classList.toggle('activo', s === 'BOSQUES DE ARAGON');
+  document.getElementById('fid-suc-ta').classList.toggle('activo', s === 'TALLER');
 }
 
 function limpiarCamposFidelizacion() {
@@ -832,6 +857,8 @@ function elegirSucursal(s, autoCajero) {
   sucursalRemision = s;
   document.getElementById('rem-suc-sc').classList.toggle('activo', s === 'SAN CRISTOBAL');
   document.getElementById('rem-suc-oa').classList.toggle('activo', s === 'OJO DE AGUA');
+  document.getElementById('rem-suc-ba').classList.toggle('activo', s === 'BOSQUES DE ARAGON');
+  document.getElementById('rem-suc-ta').classList.toggle('activo', s === 'TALLER');
   if (autoCajero) {
     llamarApi('obtenerCajeroSucursal', { sucursal: s }, function (r) {
       if (r && r.valor) setSelectValue('rem-cajero', r.valor);
@@ -854,13 +881,39 @@ function setSelectValue(id, value) {
   if (sel.selectedIndex === -1) sel.selectedIndex = 0;
 }
 
+/* Mostrador: no hay envío a domicilio (se fuerza y se bloquea el toggle).
+   Pedido: se puede elegir libremente Sí/No para el envío. */
+function elegirTipoVenta(tipo) {
+  tipoVentaRemision = tipo;
+  document.getElementById('rem-tipo-mostrador').classList.toggle('activo', tipo === 'MOSTRADOR');
+  document.getElementById('rem-tipo-pedido').classList.toggle('activo', tipo === 'PEDIDO');
+
+  var btnSi = document.getElementById('rem-env-si');
+  var btnNo = document.getElementById('rem-env-no');
+  if (tipo === 'MOSTRADOR') {
+    elegirEnvio(false);
+    btnSi.disabled = true;
+    btnNo.disabled = true;
+  } else {
+    btnSi.disabled = false;
+    btnNo.disabled = false;
+  }
+}
+
 function elegirEnvio(si) {
   envioDomicilio = si;
   document.getElementById('rem-env-si').classList.toggle('activo', si === true);
   document.getElementById('rem-env-no').classList.toggle('activo', si === false);
   document.getElementById('rem-costo-envio').disabled = !si;
   document.getElementById('rem-domicilio').disabled = !si;
-  if (!si) { document.getElementById('rem-costo-envio').value = ''; document.getElementById('rem-domicilio').value = ''; }
+  document.getElementById('rem-referencias').disabled = !si;
+  document.getElementById('rem-link-ubicacion').disabled = !si;
+  if (!si) {
+    document.getElementById('rem-costo-envio').value = '';
+    document.getElementById('rem-domicilio').value = '';
+    document.getElementById('rem-referencias').value = '';
+    document.getElementById('rem-link-ubicacion').value = '';
+  }
   calcularTotales();
 }
 
@@ -902,11 +955,13 @@ function calcularTotales() {
   var articulos = leerArticulos();
   var subtotal = articulos.reduce(function (s, a) { return s + a.importe; }, 0);
   var envio = envioDomicilio ? (Number(document.getElementById('rem-costo-envio').value) || 0) : 0;
+  var extras = Number(document.getElementById('rem-costos-extras').value) || 0;
   var anticipo = Number(document.getElementById('rem-anticipo').value) || 0;
-  var restante = subtotal - anticipo;
+  var restante = (subtotal + envio + extras) - anticipo;
 
   document.getElementById('tot-subtotal').textContent = '$' + subtotal.toFixed(2);
   document.getElementById('tot-envio').textContent = '$' + envio.toFixed(2);
+  document.getElementById('tot-extras').textContent = '$' + extras.toFixed(2);
   document.getElementById('tot-anticipo').textContent = '$' + anticipo.toFixed(2);
   document.getElementById('tot-restante').textContent = '$' + restante.toFixed(2);
 }
@@ -915,7 +970,31 @@ function enviarRemision() {
   var msg = document.getElementById('msgRemision');
   msg.className = 'msg'; msg.style.display = 'none';
 
+  /* Edición restringida: solo se mandan los 6 campos permitidos */
+  if (modoEdicionId) {
+    var payloadEdicion = {
+      linkUbicacion: document.getElementById('rem-link-ubicacion').value,
+      formaPagoRestante: document.getElementById('rem-forma-restante').value,
+      estatusPago: document.getElementById('rem-estatus-pago').value,
+      estatusPedido: document.getElementById('rem-estatus-pedido').value,
+      cobrosExtras: document.getElementById('rem-cobros-extras').value,
+      costosExtras: document.getElementById('rem-costos-extras').value
+    };
+    var restaurarEdicion = ocuparBoton('btn-guardar-remision', 'Actualizando…');
+    llamarApi('actualizarCamposLimitadosRemision', { idRemision: modoEdicionId, payload: payloadEdicion }, function (r) {
+      restaurarEdicion();
+      if (r.ok) {
+        mostrarMsg(msg, 'Cambios guardados.', true);
+        setTimeout(function () { limpiarFormularioRemision(); cerrarModal('modalRemision'); }, 1000);
+      } else {
+        mostrarMsg(msg, r.error, false);
+      }
+    });
+    return;
+  }
+
   if (!sucursalRemision) return mostrarMsg(msg, 'Selecciona la sucursal.', false);
+  if (!tipoVentaRemision) return mostrarMsg(msg, 'Selecciona el Tipo de venta.', false);
   if (envioDomicilio === null) return mostrarMsg(msg, 'Indica si es envío a domicilio.', false);
 
   var cliente = document.getElementById('rem-cliente').value.trim();
@@ -923,8 +1002,12 @@ function enviarRemision() {
   var estatusPago = document.getElementById('rem-estatus-pago').value;
   var estatusPedido = document.getElementById('rem-estatus-pedido').value;
   var cajero = document.getElementById('rem-cajero').value;
+  var fechaEntrega = document.getElementById('rem-fecha-ent').value;
+  var horaEntrega = document.getElementById('rem-hora-ent').value;
   if (!cliente) return mostrarMsg(msg, 'El campo Cliente es obligatorio.', false);
-  if (!celular) return mostrarMsg(msg, 'El campo Celular es obligatorio.', false);
+  if (!/^\d{10}$/.test(celular)) return mostrarMsg(msg, 'El celular debe tener 10 dígitos.', false);
+  if (!fechaEntrega) return mostrarMsg(msg, 'Falta la fecha de entrega.', false);
+  if (!horaEntrega) return mostrarMsg(msg, 'Falta la hora de entrega.', false);
   if (!estatusPago) return mostrarMsg(msg, 'Selecciona el Estatus de pago.', false);
   if (!estatusPedido) return mostrarMsg(msg, 'Selecciona el Estatus del pedido.', false);
   if (!cajero) return mostrarMsg(msg, 'Selecciona el Cajero.', false);
@@ -935,32 +1018,34 @@ function enviarRemision() {
   var payload = {
     cabecera: {
       sucursal: sucursalRemision,
+      tipoVenta: tipoVentaRemision,
       remisionNo: document.getElementById('rem-no').value,
       pedidoNo: document.getElementById('rem-pedido').value,
       cliente: cliente,
       celular: celular,
       envioDomicilio: envioDomicilio,
-      fechaEntrega: document.getElementById('rem-fecha-ent').value,
-      horaEntrega: document.getElementById('rem-hora-ent').value,
+      fechaEntrega: fechaEntrega,
+      horaEntrega: horaEntrega,
       costoEnvio: document.getElementById('rem-costo-envio').value,
       anticipo: document.getElementById('rem-anticipo').value,
       formaPagoAnticipo: document.getElementById('rem-forma-anticipo').value,
       formaPagoRestante: document.getElementById('rem-forma-restante').value,
       domicilio: document.getElementById('rem-domicilio').value,
+      referencias: document.getElementById('rem-referencias').value,
+      linkUbicacion: document.getElementById('rem-link-ubicacion').value,
       estatusPago: estatusPago,
       estatusPedido: estatusPedido,
       dedicatoria: document.getElementById('rem-dedicatoria').value,
       notasPedido: document.getElementById('rem-notas-pedido').value,
-      cajero: document.getElementById('rem-cajero').value
+      cajero: cajero,
+      cobrosExtras: document.getElementById('rem-cobros-extras').value,
+      costosExtras: document.getElementById('rem-costos-extras').value
     },
     articulos: articulos
   };
 
-  var restaurar = ocuparBoton('btn-guardar-remision', modoEdicionId ? 'Actualizando…' : 'Guardando…');
-  var onResultado = function (r) { restaurar(); exitoGuardarRemision(r, msg); };
-
-  if (modoEdicionId) llamarApi('actualizarRemision', { idRemision: modoEdicionId, payload: payload }, onResultado);
-  else llamarApi('guardarRemision', { payload: payload }, onResultado);
+  var restaurar = ocuparBoton('btn-guardar-remision', 'Guardando…');
+  llamarApi('guardarRemision', { payload: payload }, function (r) { restaurar(); exitoGuardarRemision(r, msg); });
 }
 
 function exitoGuardarRemision(r, msg) {
@@ -987,18 +1072,37 @@ function limpiarFormularioRemision() {
   document.getElementById('rem-modo-badge').style.display = 'none';
   document.getElementById('btn-cancelar-edicion').style.display = 'none';
   document.getElementById('btn-guardar-remision').textContent = 'Guardar Remisión';
+  establecerModoEdicionRestringido(false);
 
-  sucursalRemision = null; envioDomicilio = null;
+  sucursalRemision = null; envioDomicilio = null; tipoVentaRemision = null;
   document.getElementById('rem-suc-sc').classList.remove('activo');
   document.getElementById('rem-suc-oa').classList.remove('activo');
+  document.getElementById('rem-suc-ba').classList.remove('activo');
+  document.getElementById('rem-suc-ta').classList.remove('activo');
+  document.getElementById('rem-tipo-mostrador').classList.remove('activo');
+  document.getElementById('rem-tipo-pedido').classList.remove('activo');
   document.getElementById('rem-env-si').classList.remove('activo');
   document.getElementById('rem-env-no').classList.remove('activo');
+  document.getElementById('rem-env-si').disabled = false;
+  document.getElementById('rem-env-no').disabled = false;
   document.getElementById('rem-costo-envio').value = ''; document.getElementById('rem-costo-envio').disabled = true;
   document.getElementById('rem-domicilio').value = ''; document.getElementById('rem-domicilio').disabled = true;
-  ['rem-no', 'rem-pedido', 'rem-celular', 'rem-cliente', 'rem-fecha-ent', 'rem-hora-ent', 'rem-dedicatoria', 'rem-notas-pedido'].forEach(function (id) {
+  document.getElementById('rem-referencias').value = ''; document.getElementById('rem-referencias').disabled = true;
+  document.getElementById('rem-link-ubicacion').value = ''; document.getElementById('rem-link-ubicacion').disabled = true;
+  ['rem-no', 'rem-pedido', 'rem-celular', 'rem-cliente', 'rem-dedicatoria', 'rem-notas-pedido', 'rem-cobros-extras'].forEach(function (id) {
     document.getElementById(id).value = '';
   });
+
+  /* Fecha de hoy y 12:00 pm por defecto — se pueden editar */
+  var hoy = new Date();
+  var yyyy = hoy.getFullYear();
+  var mm = String(hoy.getMonth() + 1).padStart(2, '0');
+  var dd = String(hoy.getDate()).padStart(2, '0');
+  document.getElementById('rem-fecha-ent').value = yyyy + '-' + mm + '-' + dd;
+  document.getElementById('rem-hora-ent').value = '12:00';
+
   document.getElementById('rem-anticipo').value = '0';
+  document.getElementById('rem-costos-extras').value = '0';
   document.getElementById('rem-forma-anticipo').selectedIndex = 0;
   document.getElementById('rem-forma-restante').selectedIndex = 0;
   document.getElementById('rem-estatus-pago').selectedIndex = 0;
@@ -1010,6 +1114,28 @@ function limpiarFormularioRemision() {
   calcularTotales();
   var msg = document.getElementById('msgRemision');
   msg.className = 'msg'; msg.style.display = 'none';
+}
+
+/* ── Edición restringida: solo 6 campos son editables ─── */
+var CAMPOS_BLOQUEADOS_EN_EDICION = [
+  'rem-suc-sc', 'rem-suc-oa', 'rem-suc-ba', 'rem-suc-ta',
+  'rem-tipo-mostrador', 'rem-tipo-pedido',
+  'rem-cliente', 'rem-celular',
+  'rem-env-si', 'rem-env-no',
+  'rem-fecha-ent', 'rem-hora-ent',
+  'rem-costo-envio', 'rem-domicilio', 'rem-referencias',
+  'rem-anticipo', 'rem-forma-anticipo',
+  'rem-cajero', 'rem-dedicatoria', 'rem-notas-pedido',
+  'btn-agregar-articulo'
+];
+function establecerModoEdicionRestringido(activo) {
+  CAMPOS_BLOQUEADOS_EN_EDICION.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.disabled = activo;
+  });
+  document.querySelectorAll('#body-articulos input, #body-articulos .del-fila').forEach(function (el) {
+    el.disabled = activo;
+  });
 }
 
 /* Sale del modo edición sin guardar cambios y cierra el formulario */
@@ -1065,6 +1191,7 @@ function cargarRemisionEnFormulario(idRemision, cab, articulos) {
   document.getElementById('btn-guardar-remision').textContent = 'Actualizar Remisión';
 
   elegirSucursal(cab.sucursal, false);
+  if (cab.tipoVenta) elegirTipoVenta(cab.tipoVenta);
   document.getElementById('rem-no').value = cab.remisionNo || '';
   document.getElementById('rem-pedido').value = cab.pedidoNo || '';
   document.getElementById('rem-cliente').value = cab.cliente || '';
@@ -1074,7 +1201,11 @@ function cargarRemisionEnFormulario(idRemision, cab, articulos) {
   document.getElementById('rem-hora-ent').value = cab.horaEntrega || '';
   document.getElementById('rem-costo-envio').value = cab.costoEnvio || '';
   document.getElementById('rem-domicilio').value = cab.domicilio || '';
+  document.getElementById('rem-referencias').value = cab.referencias || '';
+  document.getElementById('rem-link-ubicacion').value = cab.linkUbicacion || '';
   document.getElementById('rem-anticipo').value = cab.anticipo || 0;
+  document.getElementById('rem-costos-extras').value = cab.costosExtras || 0;
+  document.getElementById('rem-cobros-extras').value = cab.cobrosExtras || '';
   setSelectValue('rem-forma-anticipo', cab.formaPagoAnticipo);
   setSelectValue('rem-forma-restante', cab.formaPagoRestante);
   setSelectValue('rem-estatus-pago', cab.estatusPago);
@@ -1097,6 +1228,10 @@ function cargarRemisionEnFormulario(idRemision, cab, articulos) {
     agregarFilaArticulo();
   }
   calcularTotales();
+
+  /* Solo se pueden editar: Link ubicación, Forma pago restante, Estatus
+     pago, Estatus pedido, Cobros extras y Costos extras. */
+  establecerModoEdicionRestringido(true);
 }
 
 /* ── Ticket 80mm ──────────────────────────────────────── */
@@ -1121,10 +1256,9 @@ function armarTicket(t) {
   var tabla = document.getElementById('tk-tabla');
   tabla.innerHTML = '';
   t.articulos.forEach(function (a) {
-    var fila = document.createElement('div');
-    fila.className = 'tk-row';
-    fila.innerHTML = '<span>' + a.cantidad + 'x ' + (a.articulo || '') + '</span><span>$' + Number(a.importe).toFixed(2) + '</span>';
-    tabla.appendChild(fila);
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + a.cantidad + 'x ' + (a.articulo || '') + '</td><td style="text-align:right">$' + Number(a.importe).toFixed(2) + '</td>';
+    tabla.appendChild(tr);
   });
 
   document.getElementById('tk-subtotal').textContent = '$' + Number(t.subtotal).toFixed(2);
@@ -1139,32 +1273,14 @@ function armarTicket(t) {
 }
 
 function imprimirTicket() {
-  /* Sella la hora de impresión en el propio ticket ANTES de medir el alto,
-     para que esa línea también cuente en el cálculo y no quede cortada. */
-  try {
-    var ahora = new Date();
-    var pad2 = function (n) { return String(n).padStart(2, '0'); };
-    var fechaImp = pad2(ahora.getDate()) + '/' + pad2(ahora.getMonth() + 1) + '/' +
-      ahora.getFullYear() + ' ' + pad2(ahora.getHours()) + ':' + pad2(ahora.getMinutes());
-    var elImp = document.getElementById('tk-impreso');
-    if (elImp) elImp.textContent = 'Impreso: ' + fechaImp;
-  } catch (e) {}
-
   /* Calcula la altura real del contenido del ticket y fija un @page con esa
      altura exacta antes de imprimir. Un alto fijo en "auto" a veces no se
      respeta igual en todos los navegadores/impresoras y corta contenido;
-     con la altura calculada, la hoja siempre mide justo lo que necesita y
-     la impresora hace el corte justo ahí, sin dejar papel en blanco de más.
-     La impresión se hace siempre a escala 100% (ver aviso arriba del
-     modal), así que aquí se usa la altura real del ticket tal cual, sin
-     reducirla artificialmente: reducirla es lo que antes generaba un
-     @page más chico que el contenido real y provocaba que el navegador
-     imprimiera el ticket duplicado en 2-3 hojas. El margen que se suma es
-     mínimo (solo para redondeo px→mm), para no desperdiciar rollo. */
+     con la altura calculada, la hoja siempre mide justo lo que necesita. */
   try {
     var el = document.getElementById('ticket');
     var altoPx = el.scrollHeight;
-    var altoMM = Math.ceil(altoPx * 25.4 / 96) + 6;
+    var altoMM = Math.ceil(altoPx * 25.4 / 96) + 5;
     var st = document.getElementById('page-size-dinamico');
     if (!st) {
       st = document.createElement('style');
@@ -1173,11 +1289,7 @@ function imprimirTicket() {
     }
     st.textContent = '@page{size:80mm ' + altoMM + 'mm;margin:0}';
   } catch (e) {}
-  /* Pequeña espera para que el navegador recalcule el layout con el nuevo
-     @page (y con la línea de "Impreso:" ya agregada) antes de abrir el
-     diálogo de impresión (evita que use medidas anteriores por una
-     condición de carrera). */
-  setTimeout(function () { window.print(); }, 50);
+  window.print();
 }
 
 /* ── Enviar ticket por WhatsApp ───────────────────────── */
@@ -1249,6 +1361,8 @@ function cambiarSucursalTabla(s) {
   sucursalTabla = s;
   document.getElementById('tab-oa').classList.toggle('activo', s === 'OJO DE AGUA');
   document.getElementById('tab-sc').classList.toggle('activo', s === 'SAN CRISTOBAL');
+  document.getElementById('tab-ba').classList.toggle('activo', s === 'BOSQUES DE ARAGON');
+  document.getElementById('tab-ta').classList.toggle('activo', s === 'TALLER');
   document.getElementById('tr-buscar').value = '';
   document.getElementById('tr-fecha').value = '';
   cargarRemisiones();
