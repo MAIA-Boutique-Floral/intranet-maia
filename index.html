@@ -116,14 +116,14 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
 #ticket hr{border:none;border-top:1px dashed #000;margin:6px 0}
 #ticket .tk-row{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;padding:2px 0;font-size:12.5px}
 #ticket .tk-row>span:first-child,#ticket .tk-row>b:first-child{flex:1 1 auto;min-width:0;word-break:break-word}
-#ticket .tk-row>span:last-child,#ticket .tk-row>b:last-child{flex:0 0 auto;white-space:nowrap;text-align:right;padding-right:2mm}
+#ticket .tk-row>span:last-child,#ticket .tk-row>b:last-child{flex:0 0 auto;white-space:nowrap;text-align:right}
 @media print{
   @page{size:80mm auto;margin:0}
   body>*{display:none !important}
   #ovVerTicket{display:block !important}
   #ovVerTicket *{visibility:hidden}
   #ticket,#ticket *{visibility:visible}
-  #ticket{position:absolute;top:0;left:0;width:80mm;padding:0 4mm 4mm;box-sizing:border-box}
+  #ticket{position:absolute;top:0;left:0;width:80mm;padding:0 7mm 4mm 4mm;box-sizing:border-box}
 }
 .aviso-impresion{background:#fff3cd;border:1px solid #e0c060;color:#5a4a10;font-size:11px;
   padding:10px 12px;margin-bottom:12px;border-radius:8px;font-family:Arial,sans-serif;line-height:1.5}
