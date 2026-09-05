@@ -118,12 +118,11 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
 #ticket td{font-size:12.5px;vertical-align:top;padding:2px 0}
 @media print{
   @page{size:80mm auto;margin:0}
-  html,body{width:80mm;margin:0;padding:0}
-  body *{visibility:hidden}
-  .overlay{position:static !important;background:none !important;padding:0 !important;display:block !important;overflow:visible !important}
-  .modal,.modal-wrap{position:static !important;box-shadow:none !important;max-width:none !important;width:auto !important;padding:0 !important;overflow:visible !important}
+  body>*{display:none !important}
+  #ovVerTicket{display:block !important}
+  #ovVerTicket *{visibility:hidden}
   #ticket,#ticket *{visibility:visible}
-  #ticket{position:absolute;top:0;left:0;width:80mm;padding:0 4mm;box-sizing:border-box}
+  #ticket{position:absolute;top:0;left:0;width:80mm;padding:0 4mm 4mm;box-sizing:border-box}
 }
 .aviso-impresion{background:#fff3cd;border:1px solid #e0c060;color:#5a4a10;font-size:11px;
   padding:10px 12px;margin-bottom:12px;border-radius:8px;font-family:Arial,sans-serif;line-height:1.5}
@@ -485,7 +484,7 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
       <hr>
       <div class="centro">Atendió: <span id="tk-usuario"></span></div>
       <div class="centro">¡Gracias por su compra! 🌷</div>
-      <div class="centro" id="tk-impreso" style="font-size:9.5px;color:#555;margin-top:4px"></div>
+      <div class="centro" id="tk-impreso" style="margin-top:4px"></div>
     </div>
     <button class="btn btn-primary btn-block" style="margin-top:14px" onclick="imprimirTicket()">Imprimir Ticket</button>
     <div class="fila2" style="margin-top:8px">
@@ -1165,7 +1164,7 @@ function imprimirTicket() {
   try {
     var el = document.getElementById('ticket');
     var altoPx = el.scrollHeight;
-    var altoMM = Math.ceil(altoPx * 25.4 / 96) + 3;
+    var altoMM = Math.ceil(altoPx * 25.4 / 96) + 6;
     var st = document.getElementById('page-size-dinamico');
     if (!st) {
       st = document.createElement('style');
