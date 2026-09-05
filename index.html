@@ -114,7 +114,8 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
 #ticket h3{text-align:center;font-size:16px;margin-bottom:4px}
 #ticket .centro{text-align:center}
 #ticket hr{border:none;border-top:1px dashed #000;margin:6px 0}
-#ticket table{width:100%;border-collapse:collapse}
+#ticket table{width:100%;border-collapse:collapse;table-layout:fixed}
+#ticket table td:last-child{width:34%;white-space:nowrap}
 #ticket td{font-size:12.5px;vertical-align:top;padding:2px 0}
 @media print{
   @page{size:80mm auto;margin:0}
