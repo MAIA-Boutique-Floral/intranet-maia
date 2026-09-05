@@ -109,19 +109,21 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
   margin-top:6px;padding-top:8px}
 
 /* ── TICKET 80mm ─────────────────────────────────────────── */
-#ticket{width:100%;max-width:80mm;box-sizing:border-box;margin:0 auto;padding:6px 4mm;font-family:'Courier New',monospace;font-size:11px;color:#000}
+#ticket{width:100%;max-width:80mm;box-sizing:border-box;margin:0 auto;padding:6px 4mm;font-family:'Courier New',monospace;font-size:13px;line-height:1.35;color:#000}
 #ticket div,#ticket td{word-break:break-word}
-#ticket h3{text-align:center;font-size:13px;margin-bottom:2px}
+#ticket h3{text-align:center;font-size:16px;margin-bottom:4px}
 #ticket .centro{text-align:center}
 #ticket hr{border:none;border-top:1px dashed #000;margin:6px 0}
 #ticket table{width:100%;border-collapse:collapse}
-#ticket td{font-size:10.5px;vertical-align:top;padding:1px 0}
+#ticket td{font-size:12.5px;vertical-align:top;padding:2px 0}
 @media print{
   @page{size:80mm auto;margin:0}
+  html,body{width:80mm;margin:0;padding:0}
   body *{visibility:hidden}
+  .overlay{position:static !important;background:none !important;padding:0 !important;display:block !important;overflow:visible !important}
+  .modal,.modal-wrap{position:static !important;box-shadow:none !important;max-width:none !important;width:auto !important;padding:0 !important;overflow:visible !important}
   #ticket,#ticket *{visibility:visible}
-  #ticket{position:absolute;top:0;left:0;width:80mm;padding:0 4mm;box-sizing:border-box;
-    zoom:0.85}
+  #ticket{position:absolute;top:0;left:0;width:80mm;padding:0 4mm;box-sizing:border-box}
 }
 .aviso-impresion{background:#fff3cd;border:1px solid #e0c060;color:#5a4a10;font-size:11px;
   padding:10px 12px;margin-bottom:12px;border-radius:8px;font-family:Arial,sans-serif;line-height:1.5}
@@ -1141,14 +1143,15 @@ function imprimirTicket() {
      altura exacta antes de imprimir. Un alto fijo en "auto" a veces no se
      respeta igual en todos los navegadores/impresoras y corta contenido;
      con la altura calculada, la hoja siempre mide justo lo que necesita.
-     La escala de impresión se deja fija en 85% (ver @media print), así que
-     el alto de página también se calcula a esa escala para no desperdiciar
-     papel del rollo con espacio de más. */
+     La impresión se hace siempre a escala 100% (ver aviso arriba del
+     modal), así que aquí se usa la altura real del ticket tal cual,
+     sin reducirla artificialmente: reducirla es lo que antes generaba un
+     @page más chico que el contenido real y provocaba que el navegador
+     imprimiera el ticket duplicado en 2-3 hojas. */
   try {
-    var ESCALA_IMPRESION = 0.85;
     var el = document.getElementById('ticket');
-    var altoPx = el.scrollHeight * ESCALA_IMPRESION;
-    var altoMM = Math.ceil(altoPx * 25.4 / 96) + 5;
+    var altoPx = el.scrollHeight;
+    var altoMM = Math.ceil(altoPx * 25.4 / 96) + 8;
     var st = document.getElementById('page-size-dinamico');
     if (!st) {
       st = document.createElement('style');
@@ -1157,7 +1160,10 @@ function imprimirTicket() {
     }
     st.textContent = '@page{size:80mm ' + altoMM + 'mm;margin:0}';
   } catch (e) {}
-  window.print();
+  /* Pequeña espera para que el navegador recalcule el layout con el nuevo
+     @page antes de abrir el diálogo de impresión (evita que use la altura
+     anterior por una condición de carrera). */
+  setTimeout(function () { window.print(); }, 50);
 }
 
 /* ── Enviar ticket por WhatsApp ───────────────────────── */
