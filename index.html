@@ -110,13 +110,13 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
 
 /* ── TICKET 80mm ─────────────────────────────────────────── */
 #ticket{width:100%;max-width:80mm;box-sizing:border-box;margin:0 auto;padding:6px 4mm;font-family:'Courier New',monospace;font-size:13px;line-height:1.35;color:#000}
-#ticket div,#ticket td{word-break:break-word}
+#ticket div{word-break:break-word}
 #ticket h3{text-align:center;font-size:16px;margin-bottom:4px}
 #ticket .centro{text-align:center}
 #ticket hr{border:none;border-top:1px dashed #000;margin:6px 0}
-#ticket table{width:100%;border-collapse:collapse;table-layout:fixed}
-#ticket table td:last-child{width:34%;white-space:nowrap}
-#ticket td{font-size:12.5px;vertical-align:top;padding:2px 0}
+#ticket .tk-row{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;padding:2px 0;font-size:12.5px}
+#ticket .tk-row>span:first-child,#ticket .tk-row>b:first-child{flex:1 1 auto;min-width:0;word-break:break-word}
+#ticket .tk-row>span:last-child,#ticket .tk-row>b:last-child{flex:0 0 auto;white-space:nowrap;text-align:right;padding-right:2mm}
 @media print{
   @page{size:80mm auto;margin:0}
   body>*{display:none !important}
@@ -474,14 +474,12 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
       <div id="tk-entrega-wrap">Entrega: <span id="tk-entrega"></span></div>
       <div id="tk-domicilio-wrap">Domicilio: <span id="tk-domicilio"></span></div>
       <hr>
-      <table id="tk-tabla"></table>
+      <div id="tk-tabla"></div>
       <hr>
-      <table>
-        <tr><td>Subtotal</td><td style="text-align:right" id="tk-subtotal"></td></tr>
-        <tr id="tk-envio-wrap"><td>Envío</td><td style="text-align:right" id="tk-envio"></td></tr>
-        <tr><td>Anticipo (<span id="tk-forma-ant"></span>)</td><td style="text-align:right" id="tk-anticipo"></td></tr>
-        <tr><td><b>Restante (<span id="tk-forma-res"></span>)</b></td><td style="text-align:right"><b id="tk-restante"></b></td></tr>
-      </table>
+      <div class="tk-row"><span>Subtotal</span><span id="tk-subtotal"></span></div>
+      <div class="tk-row" id="tk-envio-wrap"><span>Envío</span><span id="tk-envio"></span></div>
+      <div class="tk-row"><span>Anticipo (<span id="tk-forma-ant"></span>)</span><span id="tk-anticipo"></span></div>
+      <div class="tk-row"><b>Restante (<span id="tk-forma-res"></span>)</b><b id="tk-restante"></b></div>
       <hr>
       <div class="centro">Atendió: <span id="tk-usuario"></span></div>
       <div class="centro">¡Gracias por su compra! 🌷</div>
@@ -1123,9 +1121,10 @@ function armarTicket(t) {
   var tabla = document.getElementById('tk-tabla');
   tabla.innerHTML = '';
   t.articulos.forEach(function (a) {
-    var tr = document.createElement('tr');
-    tr.innerHTML = '<td>' + a.cantidad + 'x ' + (a.articulo || '') + '</td><td style="text-align:right">$' + Number(a.importe).toFixed(2) + '</td>';
-    tabla.appendChild(tr);
+    var fila = document.createElement('div');
+    fila.className = 'tk-row';
+    fila.innerHTML = '<span>' + a.cantidad + 'x ' + (a.articulo || '') + '</span><span>$' + Number(a.importe).toFixed(2) + '</span>';
+    tabla.appendChild(fila);
   });
 
   document.getElementById('tk-subtotal').textContent = '$' + Number(t.subtotal).toFixed(2);
