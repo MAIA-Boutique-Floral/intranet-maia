@@ -337,7 +337,7 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
     </div>
 
     <div class="fila2">
-      <div class="campo"><label>Cobros extras</label><input id="rem-cobros-extras" placeholder="Ej. moño extra, tarjeta…"></div>
+      <div class="campo"><label>Cobros extras ⚠️ únicamente cargos extras</label><input id="rem-cobros-extras" placeholder="Ej. moño extra, tarjeta…"></div>
       <div class="campo"><label>Costos extras</label><input id="rem-costos-extras" type="number" step="0.01" value="0" oninput="calcularTotales()" onfocus="if(this.value==='0')this.value='';"></div>
     </div>
 
@@ -543,7 +543,7 @@ body{font-family:Georgia,serif;background:var(--crema);color:var(--texto);min-he
    ⚠️ Reemplaza esta URL por la de TU implementación (Implementar →
    Administrar implementaciones → copiar URL que termina en /exec).
    ══════════════════════════════════════════════════════════════ */
-var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPqRy6KSQoIJFm4DMPT2K5aDhkYK7ztA0QlZclbUNtCRsdHrJHg2y1-lZ7ZtezQ2sO/exec';
+var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwQlwuwrM9CvK5kuMKxVr4PzM12ogCfmGbD2ezqJmr3NPl_3oiWFL59e_bukESTcu0T/exec';
 
 /* Llama a una función del backend por JSONP.
    accion:  nombre de la función en Codigo.gs (ver despacharAccionApi)
@@ -724,7 +724,7 @@ function cargarClientes() {
 /* Columnas a mostrar en la tabla: se oculta ID FIDELIZACION (uso interno)
    y NUMERO DE VISITA se muestra primero. */
 function columnasVisiblesClientes(headers) {
-  var visibles = headers.filter(function (h) { return h !== 'ID FIDELIZACION'; });
+  var visibles = headers.filter(function (h) { return h !== 'ID FIDELIZACION' && h !== 'CELULAR'; });
   var idxVisita = visibles.indexOf('NUMERO DE VISITA');
   if (idxVisita > 0) {
     visibles.splice(idxVisita, 1);
@@ -769,6 +769,17 @@ function filtrarTablaClientes() {
       return function () { sumarVisitaCliente(idFid, boton); };
     })(f['ID FIDELIZACION'], btnVisita);
     tdAcc.appendChild(btnVisita);
+
+    var btnNotificar = document.createElement('button');
+    btnNotificar.type = 'button';
+    btnNotificar.className = 'btn btn-secundario';
+    btnNotificar.style.padding = '5px 12px'; btnNotificar.style.fontSize = '11px'; btnNotificar.style.marginLeft = '6px';
+    btnNotificar.textContent = 'Notificar';
+    btnNotificar.onclick = (function (fila) {
+      return function () { notificarVisitaCliente(fila); };
+    })(f);
+    tdAcc.appendChild(btnNotificar);
+
     tr.appendChild(tdAcc);
 
     visibles.forEach(function (h) {
@@ -795,6 +806,25 @@ function sumarVisitaCliente(idFidelizacion, boton) {
       alert(r.error);
     }
   });
+}
+
+/* Manda al cliente, por WhatsApp (mismo enlace click-to-chat del ticket),
+   un aviso con el número de visita que tiene registrado actualmente. */
+function notificarVisitaCliente(fila) {
+  var numero = String(fila['CELULAR'] || '').replace(/[^0-9]/g, '');
+  if (!numero) { alert('Este cliente no tiene un celular válido.'); return; }
+  if (numero.length === 10) numero = '52' + numero;
+
+  var nombre = (fila['NOMBRE'] || '') + (fila['APELLIDO'] ? ' ' + fila['APELLIDO'] : '');
+  var visita = fila['NUMERO DE VISITA'] || 1;
+  var sucursal = fila['SUCURSAL'] || '';
+
+  var texto = '*MAIA Boutique*\n' +
+    'Hola ' + nombre.trim() + '! 🌷\n\n' +
+    'Esta es tu visita número ' + visita + ' en nuestra sucursal ' + sucursal + '.\n' +
+    '¡Gracias por tu preferencia!';
+
+  window.open('https://api.whatsapp.com/send?phone=' + numero + '&text=' + encodeURIComponent(texto), '_blank');
 }
 
 /* ── Entrada ──────────────────────────────────────────── */
